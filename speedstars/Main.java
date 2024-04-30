@@ -2,15 +2,14 @@ package speedstars;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
 public class Main extends JFrame {
     private JPanel menuPanel;
 
     public Main() {
         super("Track and Field Game");
-        setSize(800, 600);
+        setSize(1366, 768);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Create menu panel with background image
@@ -19,7 +18,7 @@ public class Main extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 // Load and draw background image
-                ImageIcon backgroundImage = new ImageIcon("background.jpg");
+                ImageIcon backgroundImage = new ImageIcon("uiobb.jpg");
                 g.drawImage(backgroundImage.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
@@ -31,21 +30,21 @@ public class Main extends JFrame {
     }
 
     private void addButtonsToMenuPanel() {
-        // Create and add buttons for selecting distances
-        String[] distanceLabels = {"100 meters", "200 meters", "400 meters", "800 meters", "1500 meters"};
+        // Create and add buttons for selecting events
+        String[] eventLabels = {"100 meters", "200 meters", "400 meters", "800 meters", "1500 meters"};
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10); // Add padding around buttons
         gbc.gridx = 0;
         gbc.gridy = 0;
-        for (String label : distanceLabels) {
+        for (String label : eventLabels) {
             JButton button = new JButton(label);
-            button.addActionListener(new DistanceButtonListener());
+            button.addActionListener(new EventButtonListener());
             menuPanel.add(button, gbc);
             gbc.gridy++;
         }
     }
 
-    private class DistanceButtonListener implements ActionListener {
+    private class EventButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             JButton button = (JButton) e.getSource();
@@ -58,7 +57,7 @@ public class Main extends JFrame {
     private void startGame(int distance) {
         // Create and display the game with the selected distance
         getContentPane().removeAll(); // Remove menu panel
-        Game game = new Game();
+        Game game = new Game(distance, distance);
         getContentPane().add(game);
         revalidate(); // Refresh frame
         game.requestFocusInWindow(); // Set focus to game panel for keyboard input
