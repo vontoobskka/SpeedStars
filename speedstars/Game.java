@@ -1,3 +1,5 @@
+package speedstars;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -9,7 +11,7 @@ public class Game extends JPanel implements ActionListener {
     private static final int LANE_HEIGHT = TRACK_HEIGHT / NUM_LANES;
     private static final int PLAYER_SIZE = 30;
     private static final int FINISH_LINE_X = TRACK_WIDTH - 50;
-    private static final long WORLD_RECORD = 10000; // Placeholder for world record time (in milliseconds)
+    private static final long[] WORLD_RECORDS = {9570, 19020, 43720, 75340, 225000}; // World record times (in milliseconds) for 100m, 200m, 400m, 800m, and 1500m respectively
 
     private int playerLane = NUM_LANES / 2; // Player starts in the middle lane
     private double playerPositionX = 0; // Player's X position
@@ -20,10 +22,33 @@ public class Game extends JPanel implements ActionListener {
     private int requiredClicks;
     private int currentClicks = 0;
     private double speedMPH = 0;
+    private Timer timer;
+    private int requiredClicksIndex; // Index of the required clicks for the current event
 
-    public Game(int clicks) {
-        // Adjust required clicks for each race
+    public Game(int distance, int clicks) {
         this.requiredClicks = clicks;
+
+        // Map each distance to its corresponding index in the WORLD_RECORDS array
+        switch (distance) {
+            case 100:
+                requiredClicksIndex = 0;
+                break;
+            case 200:
+                requiredClicksIndex = 1;
+                break;
+            case 400:
+                requiredClicksIndex = 2;
+                break;
+            case 800:
+                requiredClicksIndex = 3;
+                break;
+            case 1500:
+                requiredClicksIndex = 4;
+                break;
+            default:
+                requiredClicksIndex = 0; // Default to the first index
+                break;
+        }
 
         setPreferredSize(new Dimension(TRACK_WIDTH, TRACK_HEIGHT));
         setBackground(Color.RED); // Change track color to red
@@ -37,6 +62,7 @@ public class Game extends JPanel implements ActionListener {
                     startTime = System.currentTimeMillis();
                     raceStarted = true;
                     requestFocusInWindow(); // Set focus back to game panel to capture key events
+                    timer.start(); // Start the timer when the race starts
                 } else if (!raceFinished && e.getKeyCode() == KeyEvent.VK_SPACE) {
                     currentClicks++;
                     movePlayer();
@@ -47,14 +73,14 @@ public class Game extends JPanel implements ActionListener {
             }
         });
 
-        // Start the game loop
-        Timer timer = new Timer(20, this);
-        timer.start();
+        // Initialize the timer with a delay of 20 milliseconds
+        timer = new Timer(20, this);
     }
 
     private void finishRace() {
         raceFinished = true;
         finishTime = System.currentTimeMillis() - startTime;
+        timer.stop(); // Stop the timer when the race finishes
     }
 
     private void movePlayer() {
@@ -100,8 +126,8 @@ public class Game extends JPanel implements ActionListener {
             g.drawString("Time: " + formatTime(elapsedTime), TRACK_WIDTH - 150, 40);
         } else if (raceFinished) {
             g.drawString("Finish Time: " + formatTime(finishTime), TRACK_WIDTH - 200, 40);
-            g.drawString("World Record: " + formatTime(WORLD_RECORD), TRACK_WIDTH - 200, 70);
-            if (finishTime < WORLD_RECORD) {
+            g.drawString("World Record: " + formatTime(WORLD_RECORDS[requiredClicksIndex]), TRACK_WIDTH - 200, 70);
+            if (finishTime < WORLD_RECORDS[requiredClicksIndex]) {
                 g.drawString("You beat the world record!", TRACK_WIDTH - 200, 100);
             } else {
                 g.drawString("You did not beat the world record.", TRACK_WIDTH - 200, 100);
@@ -129,30 +155,6 @@ public class Game extends JPanel implements ActionListener {
         // Here you can adjust the mapping from clicks per second to speed in mph
         // For example, if 10 clicks per second = 10 mph, you can use clicksPerSecond * 10
         double clicksPerSecond = currentClicks / ((System.currentTimeMillis() - startTime) / 1000.0);
-        if (clicksPerSecond <= 3) {
-            return 0;
-        } else if (clicksPerSecond <= 5) {
-            return 5;
-        } else if (clicksPerSecond <= 8) {
-            return 10;
-        } else if (clicksPerSecond <= 10) {
-            return 15;
-        } else if (clicksPerSecond <= 12) {
-            return 20;
-        } else if (clicksPerSecond <= 14) {
-            return 25;
-        } else if (clicksPerSecond <= 16) {
-            return 30;
-        } else if (clicksPerSecond <= 18) {
-            return 35;
-        } else if (clicksPerSecond <= 20) {
-            return 40;
-        } else if (clicksPerSecond <= 22) {
-            return 45;
-        } else if (clicksPerSecond <= 24) {
-            return 50;
-        } else {
-            return 55;
-        }
+        return clicksPerSecond * 10; // Placeholder formula, adjust as needed
     }
 }
