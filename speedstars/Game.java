@@ -11,49 +11,30 @@ public class Game extends JPanel implements ActionListener {
     private static final int LANE_HEIGHT = TRACK_HEIGHT / NUM_LANES;
     private static final int PLAYER_SIZE = 30;
     private static final int FINISH_LINE_X = TRACK_WIDTH - 50;
-    private static final long[] WORLD_RECORDS = {9570, 19020, 43720, 75340, 225000}; // World record times (in milliseconds) for 100m, 200m, 400m, 800m, and 1500m respectively
+    private static final long[] WORLD_RECORDS = {10000, 20000, 30000, 40000, 50000}; // Placeholder for world record times (in milliseconds)
 
-    private int playerLane = NUM_LANES / 2; // Player starts in the middle lane
-    private double playerPositionX = 0; // Player's X position
+    private int player1Lane = 1; // Player 1 starts in the top lane
+    private int player2Lane = 2; // Player 2 starts in the second lane
+    private double player1PositionX = 0; // Player 1's X position
+    private double player2PositionX = 0; // Player 2's X position
     private long startTime;
     private long finishTime;
     private boolean raceStarted = false;
     private boolean raceFinished = false;
     private int requiredClicks;
-    private int currentClicks = 0;
-    private double speedMPH = 0;
+    private int currentClicksPlayer1 = 0;
+    private int currentClicksPlayer2 = 0;
+    private double speedMPHPlayer1 = 0;
+    private double speedMPHPlayer2 = 0;
     private Timer timer;
-    private int requiredClicksIndex; // Index of the required clicks for the current event
 
     public Game(int distance, int clicks) {
         this.requiredClicks = clicks;
 
-        // Map each distance to its corresponding index in the WORLD_RECORDS array
-        switch (distance) {
-            case 100:
-                requiredClicksIndex = 0;
-                break;
-            case 200:
-                requiredClicksIndex = 1;
-                break;
-            case 400:
-                requiredClicksIndex = 2;
-                break;
-            case 800:
-                requiredClicksIndex = 3;
-                break;
-            case 1500:
-                requiredClicksIndex = 4;
-                break;
-            default:
-                requiredClicksIndex = 0; // Default to the first index
-                break;
-        }
-
         setPreferredSize(new Dimension(TRACK_WIDTH, TRACK_HEIGHT));
         setBackground(Color.RED); // Change track color to red
 
-        // Add key listener for spacebar presses
+        // Add key listener for spacebar and right arrow key presses
         setFocusable(true);
         addKeyListener(new KeyAdapter() {
             @Override
@@ -64,9 +45,15 @@ public class Game extends JPanel implements ActionListener {
                     requestFocusInWindow(); // Set focus back to game panel to capture key events
                     timer.start(); // Start the timer when the race starts
                 } else if (!raceFinished && e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    currentClicks++;
-                    movePlayer();
-                    if (playerPositionX >= FINISH_LINE_X - PLAYER_SIZE) {
+                    currentClicksPlayer1++;
+                    movePlayer1();
+                    if (player1PositionX >= FINISH_LINE_X - PLAYER_SIZE) {
+                        finishRace();
+                    }
+                } else if (!raceFinished && e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                    currentClicksPlayer2++;
+                    movePlayer2();
+                    if (player2PositionX >= FINISH_LINE_X - PLAYER_SIZE) {
                         finishRace();
                     }
                 }
@@ -83,16 +70,23 @@ public class Game extends JPanel implements ActionListener {
         timer.stop(); // Stop the timer when the race finishes
     }
 
-    private void movePlayer() {
+    private void movePlayer1() {
         // Calculate horizontal position based on speed
-        double speed = calculateSpeedMPH();
-        playerPositionX += speed / 50; // Move player horizontally based on speed
+        double speed = calculateSpeedMPH(currentClicksPlayer1);
+        player1PositionX += speed / 50; // Move player horizontally based on speed
+    }
+
+    private void movePlayer2() {
+        // Calculate horizontal position based on speed
+        double speed = calculateSpeedMPH(currentClicksPlayer2);
+        player2PositionX += speed / 50; // Move player horizontally based on speed
     }
 
     private void updateGame() {
         if (raceStarted && !raceFinished) {
             // Calculate speed in mph based on clicks per second
-            speedMPH = calculateSpeedMPH();
+            speedMPHPlayer1 = calculateSpeedMPH(currentClicksPlayer1);
+            speedMPHPlayer2 = calculateSpeedMPH(currentClicksPlayer2);
         }
     }
 
@@ -111,10 +105,11 @@ public class Game extends JPanel implements ActionListener {
         g.setColor(Color.BLACK);
         g.fillRect(FINISH_LINE_X, 0, 5, TRACK_HEIGHT);
 
-        // Draw player if race not finished
+        // Draw players if race not finished
         if (!raceFinished) {
             g.setColor(Color.WHITE);
-            g.fillRect((int) playerPositionX, playerLane * LANE_HEIGHT + (LANE_HEIGHT - PLAYER_SIZE) / 2, PLAYER_SIZE, PLAYER_SIZE);
+            g.fillRect((int) player1PositionX, player1Lane * LANE_HEIGHT + (LANE_HEIGHT - PLAYER_SIZE) / 2, PLAYER_SIZE, PLAYER_SIZE);
+            g.fillRect((int) player2PositionX, player2Lane * LANE_HEIGHT + (LANE_HEIGHT - PLAYER_SIZE) / 2, PLAYER_SIZE, PLAYER_SIZE);
         }
 
         // Draw timer
@@ -126,16 +121,17 @@ public class Game extends JPanel implements ActionListener {
             g.drawString("Time: " + formatTime(elapsedTime), TRACK_WIDTH - 150, 40);
         } else if (raceFinished) {
             g.drawString("Finish Time: " + formatTime(finishTime), TRACK_WIDTH - 200, 40);
-            g.drawString("World Record: " + formatTime(WORLD_RECORDS[requiredClicksIndex]), TRACK_WIDTH - 200, 70);
-            if (finishTime < WORLD_RECORDS[requiredClicksIndex]) {
+            g.drawString("World Record: " + formatTime(WORLD_RECORDS[requiredClicks / 50 - 1]), TRACK_WIDTH - 200, 70);
+            if (finishTime < WORLD_RECORDS[requiredClicks / 50 - 1]) {
                 g.drawString("You beat the world record!", TRACK_WIDTH - 200, 100);
             } else {
                 g.drawString("You did not beat the world record.", TRACK_WIDTH - 200, 100);
             }
         }
 
-        // Draw speed in mph
-        g.drawString("Speed: " + String.format("%.0f", speedMPH) + " mph", 20, 40);
+        // Draw speed in mph for both players
+        g.drawString("Player 1 Speed: " + String.format("%.0f", speedMPHPlayer1) + " mph", 20, 40);
+        g.drawString("Player 2 Speed: " + String.format("%.0f", speedMPHPlayer2) + " mph", 20, 70);
     }
 
     @Override
@@ -151,7 +147,7 @@ public class Game extends JPanel implements ActionListener {
         return String.format("%02d:%02d:%03d", minutes, seconds, timeMillis % 1000);
     }
 
-    private double calculateSpeedMPH() {
+    private double calculateSpeedMPH(int currentClicks) {
         // Here you can adjust the mapping from clicks per second to speed in mph
         // For example, if 10 clicks per second = 10 mph, you can use clicksPerSecond * 10
         double clicksPerSecond = currentClicks / ((System.currentTimeMillis() - startTime) / 1000.0);
