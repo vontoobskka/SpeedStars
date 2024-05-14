@@ -1,11 +1,17 @@
 package speedstars;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 
 public class Main extends JFrame {
     private JPanel menuPanel;
+    private Clip introClip;
+    private Clip winClip;
+    private Clip loseClip;
 
     public Main() {
         super("Track and Field Game");
@@ -25,6 +31,23 @@ public class Main extends JFrame {
         menuPanel.setLayout(new GridBagLayout());
         addButtonsToMenuPanel();
         getContentPane().add(menuPanel);
+
+        // Load sound clips
+        try {
+            introClip = AudioSystem.getClip();
+            AudioInputStream introStream = AudioSystem.getAudioInputStream(new File("dream.wav"));
+            introClip.open(introStream);
+
+            winClip = AudioSystem.getClip();
+            AudioInputStream winStream = AudioSystem.getAudioInputStream(new File("win.wav"));
+            winClip.open(winStream);
+
+            loseClip = AudioSystem.getClip();
+            AudioInputStream loseStream = AudioSystem.getAudioInputStream(new File("lose.wav"));
+            loseClip.open(loseStream);
+        } catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
+            e.printStackTrace();
+        }
 
         setVisible(true);
     }
@@ -50,6 +73,10 @@ public class Main extends JFrame {
             JButton button = (JButton) e.getSource();
             String buttonText = button.getText();
             int distance = Integer.parseInt(buttonText.split(" ")[0]); // Extract distance from button text
+
+            // Stop intro sound
+            introClip.stop();
+
             startGame(distance);
         }
     }
@@ -63,7 +90,18 @@ public class Main extends JFrame {
         game.requestFocusInWindow(); // Set focus to game panel for keyboard input
     }
 
+    public void playWinSound() {
+        winClip.start();
+    }
+
+    public void playLoseSound() {
+        loseClip.start();
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(Main::new);
     }
 }
+
+
+
