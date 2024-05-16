@@ -73,13 +73,13 @@ public class Game extends JPanel implements ActionListener {
     private void movePlayer1() {
         // Calculate horizontal position based on speed
         double speed = calculateSpeedMPH(currentClicksPlayer1);
-        player1PositionX += speed / 50; // Move player horizontally based on speed
+        player1PositionX += speed / 35; // Move player horizontally based on speed
     }
 
     private void movePlayer2() {
         // Calculate horizontal position based on speed
         double speed = calculateSpeedMPH(currentClicksPlayer2);
-        player2PositionX += speed / 50; // Move player horizontally based on speed
+        player2PositionX += speed / 35; // Move player horizontally based on speed
     }
 
     private void updateGame() {
