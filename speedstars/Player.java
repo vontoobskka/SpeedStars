@@ -1,5 +1,3 @@
-package speedstars;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -10,6 +8,8 @@ public class Player {
     private int width;
     private int height;
     private Color color;
+    private int dx; // Change in x position for continuous movement
+    private int dy; // Change in y position for continuous movement
 
     public Player(int x, int y, int width, int height, Color color) {
         this.x = x;
@@ -17,6 +17,8 @@ public class Player {
         this.width = width;
         this.height = height;
         this.color = color;
+        this.dx = 0; // Initially no movement along x-axis
+        this.dy = 0; // Initially no movement along y-axis
     }
 
     public void draw(Graphics g) {
@@ -66,5 +68,18 @@ public class Player {
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    public void setDx(int dx) {
+        this.dx = dx;
+    }
+
+    public void setDy(int dy) {
+        this.dy = dy;
+    }
+
+    public void move() {
+        x += dx; // Update x position based on dx
+        y += dy; // Update y position based on dy
     }
 }
