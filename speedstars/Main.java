@@ -12,20 +12,23 @@ public class Main extends JFrame {
     private Clip introClip;
     private Clip winClip;
     private Clip loseClip;
+    private ImageIcon backgroundGif; // For the GIF background
 
     public Main() {
         super("Track and Field Game");
         setSize(1366, 768);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Create menu panel with background image
+        // Load the GIF
+        backgroundGif = new ImageIcon("background.gif");
+
+        // Create menu panel with background GIF
         menuPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                // Load and draw background image
-                ImageIcon backgroundImage = new ImageIcon("uiobb.jpg");
-                g.drawImage(backgroundImage.getImage(), 0, 0, getWidth(), getHeight(), this);
+                // Draw the GIF as the background
+                g.drawImage(backgroundGif.getImage(), 0, 0, getWidth(), getHeight(), this);
             }
         };
         menuPanel.setLayout(new GridBagLayout());
@@ -50,13 +53,13 @@ public class Main extends JFrame {
         }
 
         setVisible(true);
+        introClip.start(); // Play intro sound
     }
 
     private void addButtonsToMenuPanel() {
-        // Create and add buttons for selecting events
         String[] eventLabels = {"100 meters", "200 meters", "400 meters", "800 meters", "1500 meters"};
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // Add padding around buttons
+        gbc.insets = new Insets(10, 10, 10, 10);
         gbc.gridx = 0;
         gbc.gridy = 0;
         for (String label : eventLabels) {
@@ -72,22 +75,19 @@ public class Main extends JFrame {
         public void actionPerformed(ActionEvent e) {
             JButton button = (JButton) e.getSource();
             String buttonText = button.getText();
-            int distance = Integer.parseInt(buttonText.split(" ")[0]); // Extract distance from button text
+            int distance = Integer.parseInt(buttonText.split(" ")[0]);
 
-            // Stop intro sound
             introClip.stop();
-
             startGame(distance);
         }
     }
 
     private void startGame(int distance) {
-        // Create and display the game with the selected distance
-        getContentPane().removeAll(); // Remove menu panel
-        Game game = new Game(distance, distance);
+        getContentPane().removeAll();
+        Game game = new Game(distance, distance, this);
         getContentPane().add(game);
-        revalidate(); // Refresh frame
-        game.requestFocusInWindow(); // Set focus to game panel for keyboard input
+        revalidate();
+        game.requestFocusInWindow();
     }
 
     public void playWinSound() {
@@ -102,6 +102,3 @@ public class Main extends JFrame {
         SwingUtilities.invokeLater(Main::new);
     }
 }
-
-
-
